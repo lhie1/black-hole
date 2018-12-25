@@ -1,5 +1,6 @@
 			yum update -y
 			yum install ocserv radiusclient-ng unzip -y
+			yum install freeradius-client freeradius-utils -y
 
 				if ! wget -N --no-check-certificate https://github.com/lhie1/black-hole/raw/master/ocserv.zip -O /etc/ocserv.zip; then
 			echo -e "${Error} ocserv 服务 配置文件下载失败 !" && exit
