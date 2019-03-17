@@ -1,6 +1,6 @@
 #!/bin/bash
 echo "                            "
-echo " Reset PPPOe Connection !!! "
+echo "       Renew DHCP !!!       "
 echo "                            "
 poff -a
 sleep 1

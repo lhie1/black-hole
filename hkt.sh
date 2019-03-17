@@ -1,8 +1,9 @@
 #!/bin/bash
 echo "                            "
-echo " Reset PPPOe Connection !!! "
+echo "       Renew DHCP !!!       "
 echo "                            "
 chattr -i /etc/resolv.conf
-dhclient -r && \
-rm -rf /var/lib/dhcp/* && \
-dhclient
+dhclient -r  eth0 && \
+rm -rf /var/lib/dhcp/*
+sleep 1
+dhclient -v eth0

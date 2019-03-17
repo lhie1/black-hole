@@ -1,6 +1,8 @@
 #!/bin/bash
 echo "                            "
-echo " Reset PPPOe Connection !!! "
+echo "       Renew DHCP !!!       "
 echo "                            "
-dhclient -r -v
-dhclient -v
+NIC=`ls /sys/class/net |grep -v -E 'docker|lo|veth'`
+dhclient -r -v $NIC
+sleep 1
+dhclient -v $NIC
