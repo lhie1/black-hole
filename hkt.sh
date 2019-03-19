@@ -3,7 +3,8 @@ echo "                            "
 echo "       Renew DHCP !!!       "
 echo "                            "
 chattr -i /etc/resolv.conf
-dhclient -r eth0 && \
+NIC=`ls /sys/class/net |grep -v -E 'docker|lo|veth'`
+dhclient -r $NIC && \
 rm -rf /var/lib/dhcp/*
 sleep 1
-dhclient -v eth0
+dhclient -v $NIC
