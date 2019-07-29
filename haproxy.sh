@@ -39,24 +39,6 @@ check_sys(){
     fi
 	#bit=`uname -m`
 }
-# 设置 防火墙规则
-Save_iptables(){
-	if [[ ${release} == "centos" ]]; then
-		service iptables save
-	else
-		iptables-save > /etc/iptables.up.rules
-	fi
-}
-Set_iptables(){
-	if [[ ${release} == "centos" ]]; then
-		service iptables save
-		chkconfig --level 2345 iptables on
-	else
-		iptables-save > /etc/iptables.up.rules
-		echo -e '#!/bin/bash\n/sbin/iptables-restore < /etc/iptables.up.rules' > /etc/network/if-pre-up.d/iptables
-		chmod +x /etc/network/if-pre-up.d/iptables
-	fi
-}
 # 安装HaProxy
 installHaProxy(){
 	HaProxy_exist=`haproxy -v`
@@ -73,7 +55,6 @@ installHaProxy(){
 	if [[ ${HaProxy_exist} = "" ]]; then
 		echo -e "\033[41;37m [错误] \033[0m 安装HaProxy失败，请检查 !" && exit 1
 	else
-		Set_iptables
 		if [[ ${release}  == "centos" ]]; then
 			cat /etc/redhat-release |grep 7\..*|grep -i centos>/dev/null
 			if [[ $? = 0 ]]; then
@@ -107,12 +88,6 @@ setHaProxy(){
 	read -e -p "请按任意键继续，如有配置错误请使用 Ctrl+C 退出。" var
 	HaProxy_port_1=`cat ${HaProxy_cfg_file} | sed -n "12p" | cut -c 12-23 | grep "-"`
 	HaProxy_port=`cat ${HaProxy_cfg_file} | sed -n "12p" | cut -c 12-23`
-	if [[ ${HaProxy_port_1} = "" ]]; then
-		iptables -D INPUT -p tcp --dport ${HaProxy_port} -j ACCEPT
-	else
-		HaProxy_port_1=`echo ${HaProxy_port_1} | sed 's/-/:/g'`
-		iptables -D INPUT -p tcp --dport ${HaProxy_port_1} -j ACCEPT
-	fi
 	cat > ${HaProxy_cfg_file}<<-EOF
 global
 
@@ -172,15 +147,8 @@ startHaProxy(){
 	[[ -z $PID ]] && echo -e "\033[41;37m [错误] \033[0m HaProxy 启动失败 !" && exit 1
 	HaProxy_port_1=`cat ${HaProxy_cfg_file} | sed -n "12p" | cut -c 12-23 | grep "-"`
 	HaProxy_port=`cat ${HaProxy_cfg_file} | sed -n "12p" | cut -c 12-23`
-	if [[ ${HaProxy_port_1} = "" ]]; then
-		iptables -I INPUT -p tcp --dport ${HaProxy_port} -j ACCEPT
-	else
-		HaProxy_port_1=`echo ${HaProxy_port_1} | sed 's/-/:/g'`
-		iptables -I INPUT -p tcp --dport ${HaProxy_port_1} -j ACCEPT
-	fi
 	echo && echo "——————————————————————————————" && echo
 	echo "	HaProxy 已启动 !"
-	Save_iptables
 	viewHaProxy
 }
 # 停止aProxy
@@ -200,18 +168,11 @@ stopHaProxy(){
 	fi
 	HaProxy_port_1=`cat ${HaProxy_cfg_file} | sed -n "12p" | cut -c 12-23 | grep "-"`
 	HaProxy_port=`cat ${HaProxy_cfg_file} | sed -n "12p" | cut -c 12-23`
-	if [[ ${HaProxy_port_1} = "" ]]; then
-		iptables -D INPUT -p tcp --dport ${HaProxy_port} -j ACCEPT
-	else
-		HaProxy_port_1=`echo ${HaProxy_port_1} | sed 's/-/:/g'`
-		iptables -D INPUT -p tcp --dport ${HaProxy_port_1} -j ACCEPT
-	fi
 	sleep 2s
 	PID=`ps -ef | grep "haproxy" | grep -v grep | grep -v "haproxy.sh" | awk '{print $2}'`
 	if [[ ! -z $PID ]]; then
 		echo -e "\033[41;37m [错误] \033[0m HaProxy 停止失败 !" && exit 1
 	else
-		Save_iptables
 		echo "	HaProxy 已停止 !"
 	fi
 }
