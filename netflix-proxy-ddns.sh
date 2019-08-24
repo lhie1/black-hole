@@ -12,6 +12,6 @@ then
 echo "No Change in IP Adddress"
 else
 sed -i "s/$CURRENT_IP/$NEW_IP/g" /root/netflix-proxy/dnsmasq.conf
-docker restart dnsmasq
+service netflix-proxy-admin restart
 echo $NEW_IP > /tmp/current_ip.txt
 fi
